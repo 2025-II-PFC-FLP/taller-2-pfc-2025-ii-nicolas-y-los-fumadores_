@@ -38,7 +38,7 @@ En términos prácticos, esto significa demostrar que:
 
 #### Ejemplo: Factorial Recursivo
 
-Sea \$f : \mathbb{N} \to \mathbb{N}\$ la función que calcula el factorial de un número natural, \$f(n) = n!\$.
+Sea $f : \mathbb{N} \to \mathbb{N}$ la función que calcula el factorial de un número natural, $f(n) = n!$.
 
 Programa en Scala:
 
@@ -54,15 +54,15 @@ $$
 \forall n \in \mathbb{N} : P_f(n) == n!
 $$
 
-- **Caso base**: \$n = 0\$
+- **Caso base**: $n = 0$
 
 $$
 P_f(0) \to 1 \quad \land \quad f(0) = 0! = 1
 $$
 
-Entonces \$P_f(0) == f(0)\$.
+Entonces $P_f(0) == f(0)$.
 
-- **Caso inductivo**: \$n = k+1\$, \$k \geq 0\$.
+- **Caso inductivo**: $n = k+1\$, \$k \geq 0$.
 
 $$
 P_f(k+1) \to (k+1) \cdot P_f(k)
@@ -74,9 +74,9 @@ $$
 \to (k+1) \cdot k! = (k+1)!
 $$
 
-Por lo tanto, \$P_f(k+1) == f(k+1)\$.
+Por lo tanto, $P_f(k+1) == f(k+1)$.
 
-**Conclusión**: \$\forall n \in \mathbb{N} : P_f(n) == n!\$
+**Conclusión**: $\forall n \in \mathbb{N} : P_f(n) == n!$
 
 ---
 
