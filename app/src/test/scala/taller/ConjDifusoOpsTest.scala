@@ -25,6 +25,7 @@ class ConjDifusoOpsTest extends AnyFunSuite {
         val c5: Int => Double = _ => 0.9
         val comp5: Int => Double = x => 1.0 - c5(x)
         assert(math.abs(comp5(7) - 0.1) < 0.0001)
+
     }
 
     test("Unión") {
