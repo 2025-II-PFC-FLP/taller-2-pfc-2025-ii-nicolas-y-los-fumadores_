@@ -241,6 +241,114 @@ sequenceDiagram
     
     Note over Main: Resultado final: μ(20) = 0.444
 ```
+### Ejemplo: `grande(10, 2)(20)`
+
+#### **Estado Inicial**
+```
+Pila: []
+Heap: BigNumber instance
+```
+
+#### **Paso 1: Llamada a grande(10, 2)**
+```
+Pila:
+┌─────────────────────────────────────┐
+│ grande(d=10, e=2)                   │
+│ - Creando función potencia          │
+│ - Creando función gradoPertenencia  │
+│ - Variables locales: d=10, e=2      │
+└─────────────────────────────────────┘
+
+Heap: 
+- Closure de funcionGradoPertenencia captura (d=10, e=2)
+```
+
+#### **Paso 2: Retorno de grande - Función creada**
+```
+Pila: []
+
+Heap:
+- conjGrande: ConjDifuso = funcionGradoPertenencia(n) {...}
+  - Captura: d=10, e=2
+```
+
+#### **Paso 3: Llamada a conjGrande(20)**
+```
+Pila:
+┌─────────────────────────────────────┐
+│ funcionGradoPertenencia(n=20)       │
+│ - n=20, d=10, e=2                   │
+│ - Verificando: n > 0? ✓             │
+│ - Calculando base                   │
+└─────────────────────────────────────┘
+
+Variables locales:
+- n = 20
+- base = 20.0 / 30.0 = 0.6666...
+```
+
+#### **Paso 4: Llamada a potencia(0.6666, 2, 1)**
+```
+Pila:
+┌─────────────────────────────────────┐
+│ funcionGradoPertenencia(n=20)       │
+│ - Esperando resultado de potencia   │
+└─────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ potencia(b=0.666, exp=2, acc=1.0)   │
+│ - exp != 0, continúa recursión      │
+│ - Calculando: acc * b               │
+└─────────────────────────────────────┘
+```
+
+#### **Paso 5: Tail call - potencia(0.6666, 1, 0.6666)**
+> **Nota**: Como es @tailrec, NO se apila un nuevo frame, sino que REEMPLAZA el actual
+
+```
+Pila:
+┌─────────────────────────────────────┐
+│ funcionGradoPertenencia(n=20)       │
+└─────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ potencia(b=0.666, exp=1, acc=0.666) │ ← REEMPLAZÓ el frame anterior
+│ - exp != 0, continúa recursión      │
+│ - Calculando: acc * b               │
+└─────────────────────────────────────┘
+```
+
+#### **Paso 6: Tail call - potencia(0.6666, 0, 0.4444)**
+```
+Pila:
+┌─────────────────────────────────────┐
+│ funcionGradoPertenencia(n=20)       │
+└─────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ potencia(b=0.666, exp=0, acc=0.444) │ ← REEMPLAZÓ el frame anterior
+│ - exp == 0, caso base               │
+│ - Retorna acc = 0.4444              │
+└─────────────────────────────────────┘
+```
+
+#### **Paso 7: Retorno de potencia**
+```
+Pila:
+┌─────────────────────────────────────┐
+│ funcionGradoPertenencia(n=20)       │
+│ - Recibió: 0.4444                   │
+│ - Retornando 0.4444                 │
+└─────────────────────────────────────┘
+
+Valor de retorno: 0.4444
+```
+
+#### **Paso 8: Stack vacío - Resultado final**
+```
+Pila: []
+
+Resultado: 0.4444
+```
+
+
 
 ## Notación Matemática del BigNumber
 
@@ -493,6 +601,112 @@ sequenceDiagram
     
     Note over Main: Elemento encontrado
 ```
+## Estado de la Pila de Llamados - BuscarLista
+
+### Ejemplo: `buscarElemento(List(5, 8, 12, 3), 12)`
+
+#### **Estado Inicial**
+```
+Pila: []
+Heap: 
+- lista = List(5, 8, 12, 3)
+- elemento = 12
+```
+
+#### **Paso 1: Primera llamada**
+```
+Pila:
+┌─────────────────────────────────────────────────────┐
+│ buscarElemento(List(5,8,12,3), 12)                  │
+│ - Pattern match: x=5, xs=List(8,12,3)              │
+│ - Comparación: 5 == 12? false                      │
+│ - Preparando llamada recursiva                      │
+└─────────────────────────────────────────────────────┘
+
+Variables locales:
+- lista = List(5, 8, 12, 3)
+- elemento = 12
+- x = 5
+- xs = List(8, 12, 3)
+```
+
+#### **Paso 2: Segunda llamada (recursiva)**
+```
+Pila:
+┌─────────────────────────────────────────────────────┐
+│ buscarElemento(List(5,8,12,3), 12)                  │ ← Frame original
+│ - Esperando resultado de recursión                  │
+└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│ buscarElemento(List(8,12,3), 12)                    │ ← Nuevo frame
+│ - Pattern match: x=8, xs=List(12,3)                │
+│ - Comparación: 8 == 12? false                      │
+│ - Preparando llamada recursiva                      │
+└─────────────────────────────────────────────────────┘
+
+Variables locales (frame superior):
+- lista = List(8, 12, 3)
+- elemento = 12
+- x = 8
+- xs = List(12, 3)
+```
+
+#### **Paso 3: Tercera llamada (recursiva)**
+```
+Pila:
+┌─────────────────────────────────────────────────────┐
+│ buscarElemento(List(5,8,12,3), 12)                  │ ← Frame 1
+└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│ buscarElemento(List(8,12,3), 12)                    │ ← Frame 2
+└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│ buscarElemento(List(12,3), 12)                      │ ← Frame 3
+│ - Pattern match: x=12, xs=List(3)                  │
+│ - Comparación: 12 == 12? TRUE ✓                    │
+│ - Retornando true inmediatamente                    │
+└─────────────────────────────────────────────────────┘
+
+Variables locales (frame superior):
+- lista = List(12, 3)
+- elemento = 12
+- x = 12
+- xs = List(3)
+```
+
+#### **Paso 4: Desapilando - Retorno al Frame 2**
+```
+Pila:
+┌─────────────────────────────────────────────────────┐
+│ buscarElemento(List(5,8,12,3), 12)                  │
+└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│ buscarElemento(List(8,12,3), 12)                    │
+│ - Recibió: true                                     │
+│ - Retornando true al frame anterior                 │
+└─────────────────────────────────────────────────────┘
+
+Valor propagándose: true
+```
+
+#### **Paso 5: Desapilando - Retorno al Frame 1**
+```
+Pila:
+┌─────────────────────────────────────────────────────┐
+│ buscarElemento(List(5,8,12,3), 12)                  │
+│ - Recibió: true                                     │
+│ - Retornando true al llamador                       │
+└─────────────────────────────────────────────────────┘
+
+Valor propagándose: true
+```
+
+#### **Paso 6: Stack vacío - Resultado final**
+```
+Pila: []
+
+Resultado: true
+```
 
 ## Notación Matemática de BuscarLista
 
@@ -526,24 +740,7 @@ $$
 
 ---
 
-## Mejora con Recursión de Cola
 
-### Versión Optimizada
-```scala
-def buscarElementoOptimizado(lista: List[Int], elemento: Int): Boolean = {
-  @tailrec
-  def buscarAux(l: List[Int]): Boolean = l match {
-    case Nil => false
-    case x :: xs => if (x == elemento) true else buscarAux(xs)
-  }
-  buscarAux(lista)
-}
-```
-
-### Ventajas de la Versión Optimizada
-- **Espacio**: O(1) constante gracias a tail call optimization
-- **Rendimiento**: Mejor para listas muy grandes
-- **Sin stack overflow**: Puede procesar listas arbitrariamente largas
 
 ---
 
@@ -588,16 +785,80 @@ Toma el mínimo: `math.min(cd1(x), cd2(x))`
 
 ## Llamados de Pila - Complemento
 
-### Evaluación: noPequeño(3)
-```scala
-val pequeño: ConjDifuso = x => if (x <= 10) (10.0 - x) / 10.0 else 0.0
-val noPequeño = complemento(pequeño)
+#### **Fase 1: Creación de complemento**
 
-noPequeño(3)
-  → 1.0 - pequeño(3)
-  → 1.0 - ((10.0 - 3) / 10.0)
-  → 1.0 - 0.7
-  → 0.3
+```
+Pila:
+┌─────────────────────────────────────┐
+│ complemento(c=pequeño)              │
+│ - Creando lambda function           │
+│ - Capturando closure: c=pequeño     │
+└─────────────────────────────────────┘
+
+Heap:
+- pequeño: Int => Double
+- Closure creado: (x: Int) => 1.0 - c(x)
+```
+
+#### **Fase 2: Retorno de complemento**
+
+```
+Pila: []
+
+Heap:
+- noPequeño: ConjDifuso = (x: Int) => 1.0 - pequeño(x)
+  - Captura: c = pequeño
+```
+
+#### **Fase 3: Evaluación de noPequeño(3)**
+
+```
+Pila:
+┌─────────────────────────────────────┐
+│ lambda(x=3)                         │
+│ - Evaluando: 1.0 - pequeño(3)       │
+│ - Llamando a pequeño(3)             │
+└─────────────────────────────────────┘
+
+Variables locales:
+- x = 3
+- c = pequeño (closure capturado)
+```
+
+#### **Fase 4: Evaluación de pequeño(3)**
+
+```
+Pila:
+┌─────────────────────────────────────┐
+│ lambda(x=3) de complemento          │
+│ - Esperando resultado               │
+└─────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ pequeño(x=3)                        │
+│ - Evaluando: 3 <= 10? true          │
+│ - Calculando: (10.0-3)/10.0         │
+│ - Resultado: 0.7                    │
+└─────────────────────────────────────┘
+```
+
+#### **Fase 5: Retorno y cálculo final**
+
+```
+Pila:
+┌─────────────────────────────────────┐
+│ lambda(x=3) de complemento          │
+│ - Recibió: 0.7                      │
+│ - Calculando: 1.0 - 0.7 = 0.3       │
+│ - Retornando: 0.3                   │
+└─────────────────────────────────────┘
+```
+
+#### **Fase 6: Stack vacío**
+
+```
+Pila: []
+
+Resultado: 0.3
 ```
 
 ## Llamados de Pila - Unión
@@ -768,56 +1029,89 @@ $$
 
 ## Llamados de Pila - Ejemplo: complemento de "pequeño"
 
-### Configuración
-```scala
-val pequeño: ConjDifuso = x => {
-  if (x <= 10) (10.0 - x) / 10.0 
-  else 0.0
-}
+### Ejemplo: `complemento(pequeño)(3)`
 
+```scala
+val pequeño: ConjDifuso = x => if (x <= 10) (10.0 - x) / 10.0 else 0.0
 val noPequeño = complemento(pequeño)
+val resultado = noPequeño(3)
 ```
 
-### Evaluación para x = 3
+#### **Fase 1: Creación de complemento**
 
-#### Paso 1: Invocación
-```scala
-noPequeño(3)
+```
+Pila:
+┌─────────────────────────────────────┐
+│ complemento(c=pequeño)              │
+│ - Creando lambda function           │
+│ - Capturando closure: c=pequeño     │
+└─────────────────────────────────────┘
+
+Heap:
+- pequeño: Int => Double
+- Closure creado: (x: Int) => 1.0 - c(x)
 ```
 
-#### Paso 2: Expansión de lambda
-```scala
-1.0 - pequeño(3)
+#### **Fase 2: Retorno de complemento**
+
+```
+Pila: []
+
+Heap:
+- noPequeño: ConjDifuso = (x: Int) => 1.0 - pequeño(x)
+  - Captura: c = pequeño
 ```
 
-#### Paso 3: Evaluar pequeño(3)
-```scala
-pequeño(3)
-  → (10.0 - 3) / 10.0
-  → 7.0 / 10.0
-  → 0.7
+#### **Fase 3: Evaluación de noPequeño(3)**
+
+```
+Pila:
+┌─────────────────────────────────────┐
+│ lambda(x=3)                         │
+│ - Evaluando: 1.0 - pequeño(3)       │
+│ - Llamando a pequeño(3)             │
+└─────────────────────────────────────┘
+
+Variables locales:
+- x = 3
+- c = pequeño (closure capturado)
 ```
 
-#### Paso 4: Calcular complemento
-```scala
-1.0 - 0.7
-  → 0.3
+#### **Fase 4: Evaluación de pequeño(3)**
+
+```
+Pila:
+┌─────────────────────────────────────┐
+│ lambda(x=3) de complemento          │
+│ - Esperando resultado               │
+└─────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ pequeño(x=3)                        │
+│ - Evaluando: 3 <= 10? true          │
+│ - Calculando: (10.0-3)/10.0         │
+│ - Resultado: 0.7                    │
+└─────────────────────────────────────┘
 ```
 
-#### Resultado
-```scala
-noPequeño(3) = 0.3 ✓
+#### **Fase 5: Retorno y cálculo final**
+
+```
+Pila:
+┌─────────────────────────────────────┐
+│ lambda(x=3) de complemento          │
+│ - Recibió: 0.7                      │
+│ - Calculando: 1.0 - 0.7 = 0.3       │
+│ - Retornando: 0.3                   │
+└─────────────────────────────────────┘
 ```
 
-### Tabla de Evaluaciones
+#### **Fase 6: Stack vacío**
 
-| x | pequeño(x) | noPequeño(x) | Interpretación |
-|---|------------|--------------|----------------|
-| 0 | 1.0 | 0.0 | Totalmente pequeño → NO pequeño 0% |
-| 3 | 0.7 | 0.3 | 70% pequeño → 30% no pequeño |
-| 5 | 0.5 | 0.5 | Intermedio en ambos |
-| 8 | 0.2 | 0.8 | 20% pequeño → 80% no pequeño |
-| 12 | 0.0 | 1.0 | No pequeño → Totalmente NO pequeño |
+```
+Pila: []
+
+Resultado: 0.3
+```
 
 ## Diagrama de Llamados de Pila
 
@@ -912,6 +1206,90 @@ object ConjDifusoOps {
 - **cd2 (ConjDifuso)**: Segundo conjunto difuso
 - **Retorno**: Nueva función que para cada `x` calcula `min(cd1(x), cd2(x))`
 - **T-norma**: La función `min` es la T-norma estándar de Zadeh
+
+### Ejemplo: `interseccion(caliente, humedo)(60)`
+
+```scala
+val caliente: ConjDifuso = t => if (t >= 35) 1.0 else (t-20.0)/15.0
+val humedo: ConjDifuso = h => if (h >= 80) 1.0 else (h-40.0)/40.0
+val calienteYHumedo = interseccion(caliente, humedo)
+val resultado = calienteYHumedo(60)
+```
+
+#### **Fase 1-2: Creación (similar a complemento)**
+
+```
+Heap después de creación:
+- calienteYHumedo: ConjDifuso = (x) => math.min(caliente(x), humedo(x))
+  - Captura: cd1=caliente, cd2=humedo
+```
+
+#### **Fase 3: Evaluación de calienteYHumedo(60)**
+
+```
+Pila:
+┌─────────────────────────────────────┐
+│ lambda interseccion(x=60)           │
+│ - Debe evaluar: min(cd1(60), cd2(60))│
+│ - Llamando a cd1(60)                │
+└─────────────────────────────────────┘
+
+Variables:
+- x = 60
+- cd1 = caliente
+- cd2 = humedo
+```
+
+#### **Fase 4: Evaluación de caliente(60)**
+
+```
+Pila:
+┌─────────────────────────────────────┐
+│ lambda interseccion(x=60)           │
+│ - Esperando caliente(60)            │
+└─────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ caliente(t=60)                      │
+│ - Evaluando: 60 >= 35? true         │
+│ - Retorna: 1.0                      │
+└─────────────────────────────────────┘
+```
+
+#### **Fase 5: Evaluación de humedo(60)**
+
+```
+Pila:
+┌─────────────────────────────────────┐
+│ lambda interseccion(x=60)           │
+│ - Recibió cd1(60) = 1.0             │
+│ - Llamando a cd2(60)                │
+└─────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ humedo(h=60)                        │
+│ - Evaluando: (60-40)/40 = 0.5       │
+│ - Retorna: 0.5                      │
+└─────────────────────────────────────┘
+```
+
+#### **Fase 6: Cálculo de min**
+
+```
+Pila:
+┌─────────────────────────────────────┐
+│ lambda interseccion(x=60)           │
+│ - Recibió cd1(60) = 1.0             │
+│ - Recibió cd2(60) = 0.5             │
+│ - Calculando: min(1.0, 0.5) = 0.5   │
+└─────────────────────────────────────┘
+```
+
+#### **Fase 7: Resultado final**
+
+```
+Pila: []
+
+Resultado: 0.5
+```
 
 ## Explicación Paso a Paso
 
